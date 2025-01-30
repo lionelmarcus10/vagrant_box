@@ -52,7 +52,7 @@ Add-Computer -DomainName <Domain01>
 netsh advfirewall firewall add rule name="Allow_HTTP" dir=in action=allow protocol=TCP localport=80
 # ALLOW MESSENGER
 netsh advfirewall firewall add rule name="Allow_Messenger" dir=in action=allow program="C:\Program Files\Messenger\msmsgs.exe" enable=yes
-# Delete
+# Delete rules
 netsh advfirewall firewall delete rule name="Allow_Messenger"
 # show rules
 netsh advfirewall firewall show rule name=all # | findstr /i "Messenger"
