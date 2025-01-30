@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "kalilinux/rolling"
+  config.vm.hostname = "kali"
+  config.vm.boot_timeout = 600
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  config.vm.box_check_update = true
+  config.vm.network "private_network", ip: "192.168.56.11"
+  config.vm.network "public_network"
+  
+  # Share an additional folder to the guest VM
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  # Provider-specific configuration 
+  config.vm.provider "virtualbox" do |vb, override|
+    # Display the VirtualBox GUI when booting the machine
+    vb.gui = false
+    vb.cpus = 4
+    vb.linked_clone = true
+    # Customize the amount of memory on the VM:
+    vb.memory = "8192"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    pip install ansible --break-system-packages
+    ansible-galaxy collection install ansible.posix
+    mkdir /etc/ansible && udo chmod -R 777 /etc/ansible
+    echo "[defaults]" > /etc/ansible/ansible.cfg
+    echo "callback_whitelist = profile_tasks" >> /etc/ansible/ansible.cfg
+    if [ ! -d "/vagrant" ]; then sudo mkdir /vagrant && sudo chmod -R 777 /vagrant; fi
+  SHELL
+  config.vm.provision "file", source: "playbook.yml", destination: "/vagrant/playbook.yml"
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "/vagrant/playbook.yml"
+    ansible.become = true
+  end
+
+end

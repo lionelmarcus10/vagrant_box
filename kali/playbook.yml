@@ -1,0 +1,115 @@
+---
+# playbook.yml
+
+- name: Install deps
+  hosts: default
+  become: true
+  tasks:
+
+   - name: Install snap
+     apt:
+        state: latest
+        name: snapd  
+
+   - name: Update package cache
+     apt:
+      update_cache: yes
+
+   - name: Install Rust tools
+     apt:
+      state: latest
+      name:
+        - rustc
+        - cargo
+
+   - name: Install security tools
+     apt:
+      state: latest
+      name:
+        - feroxbuster
+        - gobuster
+        - kpcli
+        - seclists
+        - exploitdb
+        - powersploit
+        - payloadsallthethings
+        - certipy-ad
+        - impacket-scripts
+        - ldap-utils
+
+   - name: Install networking tools
+     apt:
+      state: latest
+      name:
+        - netexec
+        - nfs-common
+        - rpcbind
+
+   - name: Ensure Go is installed
+     package:
+      state: latest
+      name: golang
+
+   - name: Install pipx
+     pip:
+      state: latest
+      name: pipx
+      extra_args: --break-system-packages
+
+   
+   - name: Run pipx ensurepath
+     shell: 
+      cmd: pipx ensurepath
+      
+            
+   - name: Install python packages
+     pip:
+      state: latest
+      name:
+        - git-dumper
+        - bloodhound
+        - bloodyAD
+        # - pywhisker
+        - pypykatz
+      extra_args:  --ignore-installed --break-system-packages
+
+   - name: Clone Git repositories
+     git:
+      repo: "{{ item.repo }}"
+      dest: "{{ item.dest }}"
+     loop:
+      - { repo: 'https://github.com/ropnop/go-windapsearch', dest: '/opt/go-windapsearch' }
+      - { repo: 'https://github.com/The-Viper-One/PsMapExec', dest: '/opt/PsMapExec' }
+      - { repo: 'https://github.com/r3motecontrol/Ghostpack-CompiledBinaries', dest: '/opt/Ghostpack-CompiledBinaries' }
+      - { repo: 'https://github.com/magefile/mage', dest: '/opt/mage' }
+     tags: git_clone
+ 
+   - name: Download mage binary
+     unarchive:
+      src: https://github.com/magefile/mage/releases/download/v1.15.0/mage_1.15.0_Linux-64bit.tar.gz
+      dest: /usr/local/bin
+      mode: '0755'
+      remote_src: yes
+      extra_opts:
+        - '--wildcards'
+        - '--no-anchored'
+        - 'mage'
+
+
+   - name: Download Kerbrute binary
+     get_url:
+      url: https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64
+      dest: /usr/local/bin/kerbrute
+      mode: '0755'
+
+   - name: Download and unzip BloodHound
+     unarchive:
+      src: https://github.com/ly4k/BloodHound/releases/download/v4.2.0-ly4k/BloodHound-linux-x64.zip
+      dest: /opt
+      remote_src: yes
+
+   - name: Setup windapsearch
+     shell:
+      cmd : sudo mage build
+     args:
+      chdir: /opt/go-windapsearch

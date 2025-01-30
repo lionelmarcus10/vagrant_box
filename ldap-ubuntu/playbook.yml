@@ -1,0 +1,23 @@
+---
+# playbook.yml
+- name: Install deps
+  hosts: default
+  become: true
+  tasks:
+
+    - name: Get ldap-utils
+      apt:
+        state: latest
+        name: 
+          - ldap-utils
+
+    - name: Install slapd
+      apt:
+        state: latest
+        name: 
+          - slapd
+
+    - name: Start slapd
+      service:
+        name: slapd
+        state: started

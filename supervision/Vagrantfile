@@ -1,0 +1,68 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+    # First VM - Alpine Linux
+    config.vm.define "alpine_vm" do |alpine|
+      puts "Configuring Alpine VM..."
+      alpine.vm.box = "generic/alpine316"
+      alpine.vm.network "private_network", ip: "192.168.56.15"
+      alpine.vm.hostname = "alpine-client"
+      alpine.vm.boot_timeout = 600
+
+      alpine.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.cpus = 4
+        vb.linked_clone = true
+      end
+  
+      alpine.vm.provision "shell", inline: <<-SHELL
+        echo "Updating Alpine packages and installing required software..."
+        apk update
+        apk add setxkbmap iproute2 py3-pip
+        pip install ansible
+        ansible-galaxy collection install ansible.posix
+        if [ ! -d "/vagrant" ]; then sudo mkdir /vagrant && sudo chmod -R 777 /vagrant; fi
+      SHELL
+
+      alpine.vm.provision "file", source: "client-playbook.yml", destination: "/vagrant/playbook.yml"
+      alpine.vm.provision "ansible_local" do |ansible|
+        ansible.playbook = "/vagrant/playbook.yml"
+        ansible.become = true
+      end
+
+    end
+  
+    # Second VM - Ubuntu
+    config.vm.define "ubuntu_vm" do |ubuntu|
+      puts "Configuring Ubuntu VM..."
+      ubuntu.vm.network "private_network", ip: "192.168.56.16"
+      ubuntu.vm.box = "ubuntu/jammy64"
+      ubuntu.vm.box_version = "20241002.0.0"
+      ubuntu.vm.hostname = "ubuntu-supervisor"
+      ubuntu.vm.boot_timeout = 600
+      
+      ubuntu.vm.provider "virtualbox" do |vb|
+        vb.memory = "8192"
+        vb.cpus = 4
+        vb.linked_clone = true
+      end
+  
+      ubuntu.vm.provision "shell", inline: <<-SHELL
+        apt update
+        sudo apt install -y python3-pip
+        pip install ansible
+        ansible-galaxy collection install ansible.posix
+        if [ ! -d "/vagrant" ]; then sudo mkdir /vagrant && sudo chmod -R 777 /vagrant; fi
+      SHELL
+
+      ubuntu.vm.provision "file", source: "supervisor-playbook.yml", destination: "/vagrant/playbook.yml"
+      ubuntu.vm.provision "ansible_local" do |ansible|
+        ansible.playbook = "/vagrant/playbook.yml"
+        ansible.become = true
+      end
+
+    end
+  
+  end

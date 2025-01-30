@@ -1,0 +1,18 @@
+---
+# playbook.yml
+- name: Install client deps
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Install client web server
+      apk:
+        state: latest
+        name: 
+          - apache2
+
+    - name: enable apache2
+      service:
+        name: apache2
+        enabled: yes
+        state: started 

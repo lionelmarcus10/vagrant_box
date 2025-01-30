@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # Specify the base box
+  puts "Setting base box to generic/alpine316"
+  config.vm.box = "generic/alpine316" # Use an Alpine 3.16 box
+
+  # Set up VM parameters
+  config.vm.provider "virtualbox" do |vb|
+    puts "Configuring VM: 512MB memory, 1 CPU"
+    vb.memory = "512" # Set memory size
+    vb.cpus = 1       # Set number of CPUs
+  end
+  config.vm.network "public_network"
+
+  # Disable default NAT network interface (the one that causes port forwarding)
+  config.vm.network "private_network", ip: "192.168.56.12"
+  config.vm.hostname = "lioneldap"
+
+
+  # Provisioning steps
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Updating Alpine packages and installing required software..."
+    # Update Alpine and install necessary packages
+    apk update
+    apk add xrdp xfce4 xfce4-terminal dbus openrc xrdp xorgxrdp xorg-server xdg-user-dirs
+    apk add setxkbmap iproute2
+
+    echo "Enabling and starting dbus and xrdp services..."
+    # Enable and start necessary services
+    rc-update add dbus
+    rc-update add xrdp
+    rc-service dbus start
+    rc-service xrdp start
+    rc-service xrdp-sesman start
+
+    echo "Configuring xrdp to use xfce4 desktop environment..."
+    # Configure xrdp to use the xfce4 desktop environment
+    echo "xfce4-session" | tee .xsession
+
+    echo "Setting AZERTY (French) keyboard layout as default..."
+    # Set X11 keyboard layout for graphical environment
+    echo "setxkbmap fr" > ~/.bashrc
+    echo "setxkbmap fr" > ~/.xprofile
+
+  SHELL
+
+end
