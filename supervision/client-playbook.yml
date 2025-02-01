@@ -10,9 +10,26 @@
         state: latest
         name: 
           - apache2
+          - iproute2
 
     - name: enable apache2
       service:
         name: apache2
         enabled: yes
         state: started 
+
+    - name: Install client monitoring tools ( nagios nrpe )
+      apk:
+        state: latest
+        name: 
+          - nrpe
+          
+    - name: Add nrpe process to the allowed processes 
+      shell:
+          cmd : sudo rc-update add nrpe default
+    # - name: Creating a file with content
+    #   copy:
+    #     dest: "/your path"
+    #     content: |
+    #       line 01
+    #       line 02

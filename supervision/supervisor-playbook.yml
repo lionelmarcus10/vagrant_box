@@ -78,6 +78,8 @@
         sudo ufw allow Apache
         sudo ufw reload
         sudo htpasswd -b -c /usr/local/nagios/etc/htpasswd.users nagiosadmin vagrant
+        # enable servers folder in nagios.cfg
+        sudo sed -i '51s/^#//' /usr/local/nagios/etc/nagios.cfg
         sudo service apache2 restart
       args:
         creates: /usr/local/nagios/etc/htpasswd.users
@@ -123,6 +125,7 @@
         sudo ./configure
         sudo make
         sudo make install
+
       args:
         creates: /usr/local/nagios/libexec/check_icmp
 

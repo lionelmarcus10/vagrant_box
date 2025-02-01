@@ -1,0 +1,10 @@
+---
+# playbook.yml
+- name: Install deps
+  hosts: all
+  become: true
+  tasks:
+
+      - name: Run configure and make commands for Nagios Plugins
+        shell: |
+          echo "hello world"

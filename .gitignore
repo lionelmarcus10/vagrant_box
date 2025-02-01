@@ -1,2 +1,4 @@
 # all .vagrant folders in all folders
 */.vagrant
+*/nfs_share
+*/vbox_share

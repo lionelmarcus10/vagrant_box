@@ -1,7 +1,18 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+
+
 Vagrant.configure("2") do |config|
+
+  # Define the shared folder ( vbox mound point )
+  host_shared_folder = "vbox_share"
+  guest_mount_point = "/home/share"
+  # Ensure the host-side shared folder exists before starting Vagrant
+  system("mkdir #{host_shared_folder}") unless File.directory?(host_shared_folder)
+
+
+  
   config.vm.box = "kalilinux/rolling"
   config.vm.hostname = "kali"
   config.vm.boot_timeout = 600
@@ -24,6 +35,10 @@ Vagrant.configure("2") do |config|
     # Customize the amount of memory on the VM:
     vb.memory = "8192"
   end
+
+
+  # Vbox Shared Folder
+  config.vm.synced_folder host_shared_folder, guest_mount_point, type: "virtualbox"
 
   config.vm.provision "shell", inline: <<-SHELL
     pip install ansible --break-system-packages
