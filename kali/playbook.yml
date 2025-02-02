@@ -21,6 +21,19 @@
       name:
         - rustc
         - cargo
+        - gem
+        - docker.io
+
+   - name: Start docker
+     service:
+        name: docker
+        state: started
+
+   - name: Add user to docker group
+     user:
+      name: vagrant
+      group: docker
+      append: yes
 
    - name: Install security tools
      apt:
@@ -36,6 +49,18 @@
         - certipy-ad
         - impacket-scripts
         - ldap-utils
+        - stegseek
+        - pngcheck
+        - eog
+        - pdf-parser
+        - foremost
+        - pdfimages
+        - libreoffice
+        # https://github.com/jesparza/peepdf ( python2 )
+
+   - name: Install zsteg
+     gem:
+        name: zsteg
 
    - name: Install networking tools
      apt:
@@ -62,7 +87,7 @@
       cmd: pipx ensurepath
       
             
-   - name: Install python packages
+   - name: Install python packages and tools
      pip:
       state: latest
       name:
@@ -71,6 +96,8 @@
         - bloodyAD
         # - pywhisker
         - pypykatz
+        - stegoveritas
+        - Pillow
       extra_args:  --ignore-installed --break-system-packages
 
    - name: Clone Git repositories
@@ -94,6 +121,7 @@
         - '--wildcards'
         - '--no-anchored'
         - 'mage'
+      # add creates
 
 
    - name: Download Kerbrute binary
@@ -107,9 +135,11 @@
       src: https://github.com/ly4k/BloodHound/releases/download/v4.2.0-ly4k/BloodHound-linux-x64.zip
       dest: /opt
       remote_src: yes
+      # Add creates
 
    - name: Setup windapsearch
      shell:
       cmd : sudo mage build
      args:
       chdir: /opt/go-windapsearch
+   # add creates or conditional running

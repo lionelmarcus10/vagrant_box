@@ -9,128 +9,40 @@
       apt:
         state: latest
         name:
-          - autoconf
-          - gcc
-          - libc6
-          - make
+          - docker.io
           - wget
           - unzip
-          - apache2
-          - php
-          - libapache2-mod-php
-          - libgd-dev
           - ufw
-          - openssl 
-          - libssl-dev
-          - libmcrypt-dev 
-          - bc 
-          - gawk 
-          - dc 
-          - build-essential 
-          - snmp 
-          - libnet-snmp-perl 
-          - gettext
+
+    - name: Start docker
+      service:
+        name: docker
+        state: started
+
+    - name: Add user to docker group
+      user:
+        name: vagrant
+        groups: docker
+        append: yes
+
+    - name: Pull otel-lgtm image
+      docker_image:
+        name: grafana/otel-lgtm
+        source: pull  
+  
+    - name: Launch image if not running
+      docker_container:
+        name: otel-lgtm
+        image: grafana/otel-lgtm
+        state: started
+        ports:
+          - "3000:3000"
+          - "4317:4317"
+          - "4318:4318"
+        restart_policy: always
  
-    - name: Get the latest Nagios Core release URL
-      uri:
-        url: "https://api.github.com/repos/NagiosEnterprises/nagioscore/releases/latest"
-        method: GET
-        return_content: yes
-      register: release_info
-
-    - name: Extract the download URL for nagios core
-      set_fact:
-        nagios_url: "{{ release_info.json.assets | selectattr('name', 'search', 'tar.gz') | map(attribute='browser_download_url') | first }}"
-
-    - name: Download the Nagios Core
-      get_url:
-        url: "{{ nagios_url }}"
-        dest: "/tmp/nagioscore.tar.gz"
-        timeout: 1200
-
-    - name: Unarchive Nagios Core tarball
-      unarchive:
-        src: "/tmp/nagioscore.tar.gz"
-        dest: "/tmp"
-        remote_src: yes
-    
-    - name: delete nagioscore archived file
-      file:
-        path: "/tmp/nagioscore.tar.gz"
-        state: absent
-    
-    - name: Run configure and make commands for Nagios Core
-      shell: |
-        cd /tmp/nagios-*
-        sudo ./configure --with-httpd-conf=/etc/apache2/sites-enabled
-        sudo make all
-
-        sudo make install-groups-users
-        sudo usermod -a -G nagios www-data
-
-        make install
-        sudo make install-daemoninit
-        make install-commandmode
-        make install-config
-        make install-webconf
-        sudo a2enmod rewrite
-        sudo a2enmod cgi
-        sudo ufw allow Apache
-        sudo ufw reload
-        sudo htpasswd -b -c /usr/local/nagios/etc/htpasswd.users nagiosadmin vagrant
-        # enable servers folder in nagios.cfg
-        sudo sed -i '51s/^#//' /usr/local/nagios/etc/nagios.cfg
-        sudo service apache2 restart
-      args:
-        creates: /usr/local/nagios/etc/htpasswd.users
-
     - name: enable apache2
       service:
         name: apache2
         enabled: yes
-        state: restarted 
-
-    - name: Get the latest Nagios plugins release URL
-      uri:
-        url: "https://api.github.com/repos/nagios-plugins/nagios-plugins/releases/latest"
-        method: GET
-        return_content: yes
-      register: release_info_plugins
-
-    
-    - name: Extract the download URL for nagios plugins
-      set_fact:
-        nagios_plugin_url: "{{ release_info_plugins.json.assets | selectattr('name', 'search', 'tar.gz') | map(attribute='browser_download_url') | first }}"
-
-    - name: Download the Nagios Core
-      get_url:
-        url: "{{ nagios_plugin_url }}"
-        dest: "/tmp/nagios-plugins.tar.gz"
-        timeout: 1200
-    
-    - name: Unarchive Nagios Plugins tarball
-      unarchive:
-        src: "/tmp/nagios-plugins.tar.gz"
-        dest: "/tmp"
-        remote_src: yes
-
-    - name: delete nagios plugins archived file
-      file:
-        path: "/tmp/nagios-plugins.tar.gz"
-        state: absent
-    
-    - name: Run configure and make commands for Nagios Plugins
-      shell: |
-        cd /tmp/nagios-plugins-*
-        sudo ./configure
-        sudo make
-        sudo make install
-
-      args:
-        creates: /usr/local/nagios/libexec/check_icmp
-
-    - name: Restart nagios service
-      service:
-        name: nagios
         state: restarted
-        enabled: yes

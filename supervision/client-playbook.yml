@@ -18,15 +18,6 @@
         enabled: yes
         state: started 
 
-    - name: Install client monitoring tools ( nagios nrpe )
-      apk:
-        state: latest
-        name: 
-          - nrpe
-          
-    - name: Add nrpe process to the allowed processes 
-      shell:
-          cmd : sudo rc-update add nrpe default
     # - name: Creating a file with content
     #   copy:
     #     dest: "/your path"
