@@ -4,6 +4,11 @@
   hosts: all
   become: true
   tasks:
+  
+      - name: Install acl package
+        apk:
+          name: acl
+          state: present
 
       - name: Run configure and make commands for Nagios Plugins
         shell: |

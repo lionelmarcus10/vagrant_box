@@ -40,9 +40,3 @@
           - "4317:4317"
           - "4318:4318"
         restart_policy: always
- 
-    - name: enable apache2
-      service:
-        name: apache2
-        enabled: yes
-        state: restarted
