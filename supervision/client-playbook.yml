@@ -5,16 +5,22 @@
   become: true
   tasks:
 
-    - name: Install docker and go
+    - name: Install dependencies
       apk:
         update_cache: yes
         state: latest
         name:
           - docker
           - go
+          - git
+          - openjdk17-jdk
+          - apache2
+          - iproute2
+
     - name: install docker pip
       pip:
         name: docker
+
     - name: Start docker
       service:
         name: docker
@@ -27,70 +33,19 @@
         groups: docker
         append: yes
 
-    - name: Install client web server
-      apk:
-        state: latest
-        name: 
-          - apache2
-          - iproute2
-
     - name: enable apache2
       service:
         name: apache2
         enabled: yes
         state: started
     
-    - name: Install HotROD container image
-      docker_image:
-        name: jaegertracing/example-hotrod
-        source: pull
-    
-    - name: Install Telemetrygen container image
-      docker_image:
-        name: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen
-        source: pull
+    - name: Clone repo
+      git:
+        repo: 'https://github.com/grafana/docker-otel-lgtm'
+        dest: /home/vagrant/docker-otel-lgtm
 
-    - name: Launch Telemetrygen container and send data to server 
-      docker_container:
-        name: telemetrygen
-        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen
-        env: 
-          OTEL_EXPORTER_OTLP_ENDPOINT: "http://192.168.56.16:4318"
-          TELEMETRYGEN_INTERVAL: "30s"
-        state: started
-        restart_policy: always
-          
-    - name: Launch HotROD container
-      docker_container:
-        name: hotrod
-        image: jaegertracing/example-hotrod 
-        env: 
-          OTEL_EXPORTER_OTLP_ENDPOINT: "http://192.168.56.16:4318"
-        state: started
-        ports:
-          - "8080:8080"
-        restart_policy: always
-
-    - name: Enable mod_status on Apache
-      apache2_module:
-        name: status
-        state: present
-      notify:
-        - restart apache2
-
-    - name: Add Apache server status URL for Prometheus scraping
+    - name: Add env variable to user's .bashrc
       lineinfile:
-        path: /etc/apache2/apache2.conf
-        line: |
-          <Location "/server-status">
-            SetHandler server-status
-            Require host 192.168.56.16  # Monitoring server IP
-          </Location>
-      notify:
-        - restart apache2
-
-  handlers:
-  - name: restart apache2
-    service:
-        name: apache2
-        state: restarted
+        path: /home/vagrant/.bashrc
+        line: 'export OTEL_EXPORTER_OTLP_ENDPOINT="http://192.168.56.16:4318"'
+        create: yes

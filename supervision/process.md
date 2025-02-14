@@ -10,6 +10,7 @@
 
 ## Client ( supervised server)
 
-- apache
-- telerimetry simulator container
-
+- clone repo
+- pass to root user
+- set `export OTEL_EXPORTER_OTLP_ENDPOINT=http://192.168.56.16:4318` 
+- run exemple
