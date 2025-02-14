@@ -90,7 +90,7 @@ objectClass: top
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: posixAccount
-uidNumber: 6002
+uidNumber: 2
 gidNumber: 6002
 homeDirectory: /home/pierre
 loginShell: /bin/bash
@@ -108,7 +108,7 @@ objectClass: top
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: posixAccount
-uidNumber: 6001
+uidNumber: 1
 gidNumber: 6001
 homeDirectory: /home/souheib
 loginShell: /bin/bash
@@ -258,3 +258,57 @@ systemctl reload apache2
 ```bash
 curl http://localhost/lam
 ```
+
+## Evaluation 2:  Enable SSH accès
+
+```bash
+cat /etc/nsswitch.conf 
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
+
+passwd:         ldap files systemd
+group:          ldap files systemd
+shadow:         ldap files
+gshadow:        files
+```
+
+```bash
+sudo cat /etc/nslcd.conf
+# /etc/nslcd.conf
+# nslcd configuration file. See nslcd.conf(5)
+# for details.
+
+# The user and group nslcd should run as.
+uid nslcd
+gid nslcd
+
+# The location at which the LDAP server(s) should be reachable.
+uri ldaps://Efrei.fr:636
+
+# The search base that will be used for all queries.
+base dc=Efrei,dc=fr
+
+# The LDAP protocol version to use.
+#ldap_version 3
+
+# The DN to bind with for normal lookups.
+#binddn cn=annonymous,dc=example,dc=net
+#bindpw secret
+
+# The DN used for password modifications by root.
+#rootpwmoddn cn=admin,dc=example,dc=com
+
+# SSL options
+#ssl off
+tls_reqcert never
+tls_cacertfile /etc/ssl/certs/ca-certificates.crt
+
+# The search scope.
+#scope sub
+```
+
+## TIPS
+[From Openlap installtion to ldaps domain creation with user session activated](https://mittaltarun9715.medium.com/how-to-setup-openldap-server-and-client-installation-in-ubuntu-18-04-with-password-caching-d508a9e80642)

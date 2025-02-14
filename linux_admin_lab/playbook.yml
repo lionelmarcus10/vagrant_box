@@ -5,11 +5,17 @@
   become: true
   tasks:
   
-      - name: Install acl package
+      - name: Install packages
         apk:
-          name: acl
+          name: 
+            - acl
+            - nfs-utils
+            - rpcbind
+            - bind
+            - unbound
+            - shadow
+            - dhcp
+            - vlan
+            - iptables
+            - rsyslog
           state: present
-
-      - name: Run configure and make commands for Nagios Plugins
-        shell: |
-          echo "hello world"

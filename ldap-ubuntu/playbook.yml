@@ -10,6 +10,12 @@
         state: latest
         name: 
           - ldap-utils
+          - debconf-utils
+          - libpam-ldapd
+          - nslcd
+          - nscd
+          - nslcd-utils
+          - libnss-ldapd
 
     - name: Install slapd
       apt:
