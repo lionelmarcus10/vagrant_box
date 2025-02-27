@@ -6,14 +6,15 @@
   become: true
   tasks:
 
-   - name: Install snap
-     apt:
-        state: latest
-        name: snapd  
 
    - name: Update package cache
      apt:
       update_cache: yes
+
+   - name: Install snap
+     apt:
+        state: latest
+        name: snapd  
 
    - name: Install Rust tools
      apt:
@@ -23,6 +24,8 @@
         - cargo
         - gem
         - docker.io
+        - docker-compose
+
 
    - name: Start docker
      service:
@@ -32,7 +35,7 @@
    - name: Add user to docker group
      user:
       name: vagrant
-      group: docker
+      groups: docker
       append: yes
 
    - name: Install security tools
@@ -54,9 +57,7 @@
         - eog
         - pdf-parser
         - foremost
-        - pdfimages
         - libreoffice
-        # https://github.com/jesparza/peepdf ( python2 )
 
    - name: Install zsteg
      gem:
@@ -94,7 +95,6 @@
         - git-dumper
         - bloodhound
         - bloodyAD
-        # - pywhisker
         - pypykatz
         - stegoveritas
         - Pillow
@@ -142,4 +142,25 @@
       cmd : sudo mage build
      args:
       chdir: /opt/go-windapsearch
-   # add creates or conditional running
+
+
+   - name: RDP on kali
+     apt:
+        state: latest
+        name: 
+          - xrdp
+          - xfce4
+          - xfce4-goodies
+          - xorgxrdp
+
+   - name: Add xsession file
+     shell: 
+      cmd: echo xfce4-session > ~/.xsession
+
+   - name: Start xrdp
+     service:
+      name: xrdp
+      state: started
+
+# https://github.com/jesparza/peepdf ( python2 )
+# - pywhisker ( pipx)
