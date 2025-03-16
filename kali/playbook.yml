@@ -11,10 +11,10 @@
      apt:
       update_cache: yes
 
-   - name: Install snap
-     apt:
-        state: latest
-        name: snapd  
+  #  - name: Install snapd
+  #    apt:
+  #       state: latest
+  #       name: snapd  
 
    - name: Install Rust tools
      apt:
